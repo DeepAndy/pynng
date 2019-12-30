@@ -31,3 +31,9 @@ jobs:
         cibuildwheel --output-dir wheelhouse .
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: 'wheelhouse'}
+env:
+  global:
+    - CIBW_SKIP="cp27-*"
+    - TWINE_USERNAME=codypiersall
+    - CIBW_TEST_REQUIRES="pytest pytest-asyncio pytest-trio trio"
+    - CIBW_TEST_COMMAND="pytest -s -v {project}/test"
