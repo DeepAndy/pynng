@@ -79,26 +79,18 @@ def build_windows_libs():
     Builds the nng and mbedtls libs.
 
     """
-    # pick the correct cmake generator, based on the Python version.
-    # from https://wiki.python.org/moin/WindowsCompilers for Python
-    # version, and cmake --help for list of CMake generator names.
-    # We can't *just* specify the architecture of Python because it could use
-    # an incompatible compiler, i.e. there is no guarantee that VS 2017 will be
-    # compatible with a VS 2015 build of Python.
+    # The user has to have the correct Visual Studio version on the path or the
+    # build will fail, possibly in exciting and mysterious ways.
     major, minor, *_ = sys.version_info
-    cmake_generators = {
-        (3, 5): 'Visual Studio 14 2015',
-        (3, 6): 'Visual Studio 14 2015',
-        (3, 7): 'Visual Studio 14 2015',
-    }
-    gen = cmake_generators[(major, minor)]
 
     is_64bit = sys.maxsize > 2**32
     if is_64bit:
-        gen += ' Win64'
+        flag = 'x64'
+    else:
+        flag = 'win32'
 
-    build_mbedtls_windows(['-G', gen])
-    build_nng_windows(['-G', gen])
+    build_mbedtls_windows(['-A', flag])
+    build_nng_windows(['-A', flag])
 
 
 def build_nng_lib():
