@@ -1,13 +1,20 @@
+resources:
+  repositories:
+  - repository: OpenAstronomy
+    type: github
+    endpoint: pypiupload
+    name: OpenAstronomy/azure-pipelines-templates
+    ref: master
+
 variables:
   CIBW_SKIP: "cp27-*"
-  TWINE_USERNAME: "codypiersall"
   CIBW_TEST_REQUIRES: "pytest pytest-asyncio pytest-trio trio"
   CIBW_TEST_COMMAND: "pytest -s -v {project}/test"
 
 jobs:
 - template: publish.yml@OpenAstronomy
   parameters:
-    pypi_connection_name: 'pypi_endpoint'
+    pypi_connection_name: 'pypiupload'
     targets:
     - sdist
     - wheels_linux
