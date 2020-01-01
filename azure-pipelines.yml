@@ -1,5 +1,5 @@
 variables:
-  CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-*"
+  CIBW_SKIP: "cp27-*"
   TWINE_USERNAME: "codypiersall"
   CIBW_TEST_REQUIRES: "pytest pytest-asyncio pytest-trio trio"
   CIBW_TEST_COMMAND: "pytest -s -v {project}/test"
@@ -7,7 +7,9 @@ variables:
 jobs:
 - job: linux
   variables:
-    CIBW_BEFORE_BUILD: "yum install -y ninja-build && pip install --upgrade pip && pip install --only-binary=:all: cmake==3.13.3"
+    # gotta skip cp38 until we can install cmake in 3.8
+    CIBW_SKIP: "cp27-* cp38-*"
+    CIBW_BEFORE_BUILD: "yum install -y ninja-build && pip install cmake"
   pool: {vmImage: 'Ubuntu-16.04'}
   steps:
     - task: UsePythonVersion@0
