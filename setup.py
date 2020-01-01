@@ -20,7 +20,7 @@ WINDOWS = sys.platform == 'win32'
 
 
 def _rmdir(dirname):
-    # we can't use shutil.rmtree because it won't delete readonly stuff.
+    # we can't use shutil.rmtree because it won't delete readonly files.
     if WINDOWS:
         cmd = ['rmdir', '/q', '/s', dirname]
     else:
@@ -49,6 +49,7 @@ def build_mbedtls(cmake_args):
         '-DCMAKE_INSTALL_PREFIX=../prefix',
         '..'
     ]
+    print('building mbedtls with:', cmake_cmd)
     do(cmake_cmd, cwd=cwd)
     do(
         'cmake --build . --config Release --target install',
@@ -79,6 +80,7 @@ def build_nng(cmake_args):
         '-DMBEDTLS_ROOT_DIR={}/mbedtls/prefix/'.format(THIS_DIR),
         '..',
     ]
+    print('building mbedtls with:', cmake_cmd)
     do(cmake_cmd, cwd='nng/build')
     do(
         'cmake --build . --config Release',
