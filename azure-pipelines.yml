@@ -3,6 +3,7 @@ variables:
   TWINE_USERNAME: "codypiersall"
   CIBW_TEST_REQUIRES: "pytest pytest-asyncio pytest-trio trio"
   CIBW_TEST_COMMAND: "pytest -s -v {project}/test"
+  CIBW_BEFORE_BUILD: "pip install cmake"
 
 jobs:
 - job: linux
