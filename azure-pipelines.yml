@@ -3,15 +3,15 @@ variables:
   TWINE_USERNAME: "codypiersall"
   CIBW_TEST_REQUIRES: "pytest pytest-asyncio pytest-trio trio"
   CIBW_TEST_COMMAND: "pytest -s -v {project}/test"
+  # CIBW_BEFORE_BUILD: "pip install --only-binary=:all: cmake"
 
 jobs:
 - job: linux
-  pool: {vmImage: 'Ubuntu-16.04'}
+  pool: {vmImage: 'Ubuntu-18.04'}
   steps:
     - task: UsePythonVersion@0
     - bash: |
         python -m pip install --upgrade pip
-        'python -m pip install --only-binary=:all: cmake'
         pip install cibuildwheel==1.1.0
         cibuildwheel --output-dir wheelhouse .
     - task: PublishBuildArtifacts@1
