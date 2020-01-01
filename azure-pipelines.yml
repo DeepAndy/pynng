@@ -7,8 +7,8 @@ variables:
 jobs:
 - job: linux
   variables:
-    # gotta skip cp38 until we can install cmake in 3.8
     CIBW_SKIP: "cp27-* cp38-*"
+    # need newer version of cmake than is available
     CIBW_BEFORE_BUILD: "yum install -y ninja-build && pip install cmake"
   pool: {vmImage: 'Ubuntu-16.04'}
   steps:
@@ -32,6 +32,7 @@ jobs:
 - job: windows
   pool: {vmImage: 'vs2017-win2016'}
   steps:
+    - script: choco install ninja
     - task: UsePythonVersion@0
     - bash: |
         python -m pip install --upgrade pip
