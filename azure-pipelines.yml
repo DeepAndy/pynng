@@ -3,11 +3,12 @@ variables:
   TWINE_USERNAME: "codypiersall"
   CIBW_TEST_REQUIRES: "pytest pytest-asyncio pytest-trio trio"
   CIBW_TEST_COMMAND: "pytest -s -v {project}/test"
-  # CIBW_BEFORE_BUILD: "pip install --only-binary=:all: cmake"
 
 jobs:
 - job: linux
-  pool: {vmImage: 'Ubuntu-18.04'}
+  variables:
+    CIBW_BEFORE_BUILD: "yum install -y ninja-build && pip install --only-binary=:all: cmake"
+  pool: {vmImage: 'Ubuntu-16.04'}
   steps:
     - task: UsePythonVersion@0
     - bash: |
