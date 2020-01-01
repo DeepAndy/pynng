@@ -7,7 +7,7 @@ variables:
 jobs:
 - job: linux
   variables:
-    CIBW_BEFORE_BUILD: "yum install -y ninja-build && pip install --only-binary=:all: cmake==3.13.3"
+    CIBW_BEFORE_BUILD: "yum install -y ninja-build && pip install --upgrade pip && pip install --only-binary=:all: cmake==3.13.3"
   pool: {vmImage: 'Ubuntu-16.04'}
   steps:
     - task: UsePythonVersion@0
