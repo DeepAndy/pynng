@@ -1,6 +1,6 @@
 import os
-import shutil
 from subprocess import check_call
+import shutil
 import sys
 
 import setuptools.command.build_py
@@ -16,20 +16,32 @@ NNG_REV = 'd3bd35ab49ad74528fd9e34cce9016d74dd91943'
 MBEDTLS_REPO = 'https://github.com/ARMmbed/mbedtls.git'
 MBEDTLS_REV = '04a049bda1ceca48060b57bc4bcf5203ce591421'
 
+WINDOWS = sys.platform == 'win32'
 
-def build_mbedtls_windows(cmake_args):
+
+def _rmdir(dirname):
+    # we can't use shutil.rmtree because it won't delete readonly stuff.
+    if WINDOWS:
+        cmd = ['rmdir', '/q', '/s', dirname]
+    else:
+        cmd = ['rm', '-rf', dirname]
+    return check_call(cmd)
+
+
+def build_mbedtls(cmake_args):
     """
     Clone mbedtls and build it with cmake.
 
     """
     do = check_call
     if os.path.exists('mbedtls'):
-        pass
-        # we can't use shutil.rmtree because it won't delete readonly stuff.
-        do('rmdir /q /s mbedtls', shell=True)
+        _rmdir('mbedtls')
     do('git clone --recursive {}'.format(MBEDTLS_REPO), shell=True)
+    # for local hacking, just copy a directory (network connection is slow)
+    # do('cp -r ../mbedtls mbedtls', shell=True)
     do('git checkout {}'.format(MBEDTLS_REV), shell=True, cwd='mbedtls')
-    os.mkdir('mbedtls/build')
+    cwd = 'mbedtls/build'
+    os.mkdir(cwd)
     cmake_cmd = ['cmake'] + cmake_args
     cmake_cmd += [
         '-DENABLE_PROGRAMS=OFF',
@@ -37,23 +49,25 @@ def build_mbedtls_windows(cmake_args):
         '-DCMAKE_INSTALL_PREFIX=../prefix',
         '..'
     ]
-    do(cmake_cmd, cwd='mbedtls/build')
+    do(cmake_cmd, cwd=cwd)
     do(
-        'cmake --build . --config Release',
+        'cmake --build . --config Release --target install',
         shell=True,
-        cwd='mbedtls/build',
+        cwd=cwd,
     )
 
 
-def build_nng_windows(cmake_args):
+def build_nng(cmake_args):
     """
     Clone nng and build it with cmake, with TLS enabled.
 
     """
     do = check_call
     if os.path.exists('nng'):
-        do('rmdir /q /s nng', shell=True)
+        _rmdir('nng')
     do('git clone {}'.format(NNG_REPO), shell=True)
+    # for local hacking, just copy a directory (network connection is slow)
+    # do('cp -r ../nng-clean nng', shell=True)
     do('git checkout {}'.format(NNG_REV), shell=True, cwd='nng')
     os.mkdir('nng/build')
     cmake_cmd = ['cmake'] + cmake_args
@@ -62,8 +76,7 @@ def build_nng_windows(cmake_args):
         '-DNNG_TESTS=OFF',
         '-DNNG_TOOLS=OFF',
         '-DCMAKE_BUILD_TYPE=Release',
-        '-DMBEDTLS_ROOT_DIR={}/mbedtls/build/library/Release/'.format(THIS_DIR),
-        '-DMBEDTLS_INCLUDE_DIR={}/mbedtls/include/'.format(THIS_DIR),
+        '-DMBEDTLS_ROOT_DIR={}/mbedtls/prefix/'.format(THIS_DIR),
         '..',
     ]
     do(cmake_cmd, cwd='nng/build')
@@ -74,7 +87,7 @@ def build_nng_windows(cmake_args):
     )
 
 
-def build_windows_libs():
+def build_libs():
     """
     Builds the nng and mbedtls libs.
 
@@ -83,14 +96,19 @@ def build_windows_libs():
     # build will fail, possibly in exciting and mysterious ways.
     major, minor, *_ = sys.version_info
 
+    flags = ['-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true']
     is_64bit = sys.maxsize > 2**32
-    if is_64bit:
-        flag = 'x64'
-    else:
-        flag = 'win32'
+    if WINDOWS:
+        if is_64bit:
+            flags += ['-A', 'x64']
+        else:
+            flags += ['-A', 'win32']
 
-    build_mbedtls_windows(['-A', flag])
-    build_nng_windows(['-A', flag])
+    if shutil.which('ninja'):
+        # the ninja build generator is a million times faster.
+        flags += ['-G',  'Ninja']
+    build_mbedtls(flags)
+    build_nng(flags)
 
 
 def build_nng_lib():
@@ -104,12 +122,7 @@ def build_nng_lib():
         # just use it!
         return
 
-    if sys.platform == 'win32':
-        build_windows_libs()
-    else:
-        script = os.path.join(THIS_DIR, 'build_nng.sh')
-        cmd = [shutil.which("sh"), script, NNG_REV, MBEDTLS_REV]
-        check_call(cmd)
+    build_libs()
 
 
 # TODO: this is basically a hack to get something to run before running cffi
