@@ -32,7 +32,10 @@ jobs:
 - job: windows
   pool: {vmImage: 'vs2017-win2016'}
   steps:
-    - script: choco install ninja -y
+    # TODO: can't use ninja for now because Ninja doesn't take architecture
+    # arguments, so we would need to figure out the right Visual Studio version
+    # to use, but we're going to punt on that decision for a while.
+    # - script: choco install ninja -y
     - task: UsePythonVersion@0
     - bash: |
         python -m pip install --upgrade pip

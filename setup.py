@@ -108,7 +108,7 @@ def build_libs():
 
     if shutil.which('ninja'):
         # the ninja build generator is a million times faster.
-        flags += ['-G',  'Ninja']
+        flags += ['-G', 'Ninja']
     build_mbedtls(flags)
     build_nng(flags)
 
