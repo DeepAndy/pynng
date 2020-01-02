@@ -32,7 +32,6 @@ jobs:
 - job: windows
   pool: {vmImage: 'vs2017-win2016'}
   steps:
-    - script: choco install ninja -y
     - task: UsePythonVersion@0
     - bash: |
         python -m pip install --upgrade pip

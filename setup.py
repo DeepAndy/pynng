@@ -106,9 +106,10 @@ def build_libs():
         else:
             flags += ['-A', 'win32']
 
-    if shutil.which('ninja'):
+    if not WINDOWS:
+        # silly test for CI
         # the ninja build generator is a million times faster.
-        flags += ['-G',  'Ninja']
+        flags += ['-G', 'Ninja']
     build_mbedtls(flags)
     build_nng(flags)
 
